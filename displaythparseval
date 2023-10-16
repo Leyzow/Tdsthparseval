@@ -1,0 +1,55 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+T = 4  # Période de la fonction carrée
+t_values = np.linspace(-T/2, 3*T/2, 1000)  # Valeurs de t pour l'animation
+f = lambda t: np.sign(np.sin(2*np.pi*t/T))  # Définition de la fonction carrée
+
+fig, ax = plt.subplots()
+line, = ax.plot([], [], 'r-')
+cursor, = ax.plot([], [], 'bo', markersize=10)
+ax.set_xlim(-T/2, 3*T/2)
+ax.set_ylim(-1.5, 1.5)
+ax.set_xlabel('t')
+ax.set_ylabel('f(t)')
+ax.set_title('Progression de f(t)')
+
+x_data, y_data = [], []
+
+def init():
+    line.set_data([], [])
+    cursor.set_data([], [])
+    return line, cursor
+
+def animate(t):
+    global x_data, y_data  # Utilisation de x_data et y_data globalement
+
+    x = np.linspace(-T/2, t, 1000)
+    y = f(x)
+
+    # Mettre à jour les données de la ligne
+    x_data = list(x)
+    y_data = list(y)
+
+    line.set_data(x_data, y_data)
+    cursor.set_data(t, f(t))
+    ax.set_title('Progression de f(t) pour t = {:.2f}'.format(t))
+
+    # Afficher les passages entre T, T/2, 3T/2, 2T
+    if t == T/2 or t == T or t == 3*T/2 or t == 2*T:
+        ax.annotate('T', xy=(t, f(t)), xycoords='data',
+                    xytext=(-30, 30), textcoords='offset points',
+                    arrowprops=dict(arrowstyle="->"))
+
+    # Arrêter le tracé à la fin
+    if t == t_values[-1]:
+        line.set_data([], [])
+        cursor.set_data([], [])
+
+    # Réglage de la vitesse
+    interval = 5 if t % T == 0 else 1  # Ralentissement lors des montées
+    return line, cursor
+
+ani = FuncAnimation(fig, animate, t_values, init_func=init, blit=True, interval=1)
+plt.show()
